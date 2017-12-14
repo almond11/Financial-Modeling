@@ -8,23 +8,12 @@ from util import empirical_sharpe_ratio
 
 
 class Portfolio(object):
-    """
-    Superclass for any portfolio optimization algorithm.
-    Follows the conventions used in most of portfolio optimization
-    literature.
-    """
+   
 
     def __init__(self, market_data, market_data_train=None, start=0, stop=None, rebal_interval=1, tune_interval=None, tune_length=None,
                  init_b=None, init_dollars=init_dollars, verbose=False, silent=False,
                  past_results_dir=None, new_results_dir=None, repeat_past=False):
-        """
-        :param market_data: Stock market data (MarketData object)
-        :param start: What day this portfolio starts at. (For tuning hyperparams)
-        :param init_b: An initial allocation to make at the end of the 1st day. This is useful if
-        you want to inject prior knowledge about which stocks you think will perform well. Also useful
-        for tuning hyperparameters, because we may want the portfolio to start out in a particular state.
-        :param rebal_interval: Rebalance interval (Rebalance the portfolio every |reb_int| days)
-        """
+    
 
         if not isinstance(market_data, MarketData):
             raise Exception('market_data input to Portfolio constructor must be a MarketData object.')
@@ -70,19 +59,12 @@ class Portfolio(object):
         self.repeat_past = repeat_past
 
     def tune_hyperparams(self, cur_day):
-        # Implement this in your portfolio if you want to tune
-        raise 'tune_hyperparams is an abstract method, so it must be implemented by the child class!'
+         raise 'tune_hyperparams is an abstract method, so it must be implemented by the child class!'
 
     def update(self, cur_day, init=False):
-        """
-        Update the portfolio
-        :param cur_day: 0-based index of today's date
-        :param init: If True, this portfolio is being initialized today.
-        :return: None
-        """
+     
 
-        # Check if we need to tune hyperparameters today
-        if self.tune_interval and not self.repeat_past:
+         if self.tune_interval and not self.repeat_past:
             if cur_day > self.start and cur_day % self.tune_interval == 1:
                 self.tune_hyperparams(cur_day)
 
@@ -101,20 +83,17 @@ class Portfolio(object):
         day_idx = cur_day - self.start
 
         if self.repeat_past:
-            # Use results we've already run w/out re-running algorithm
-            if day_idx < self.len_past-1:
+             if day_idx < self.len_past-1:
                 self.b = self.past_b_history[:, day_idx+1]
             return
 
         if init and (self.b is not None):
-            # b has already been initialized using initialization argument init_b
-            # This may be useful for the test set where we may not want to initialize uniformly.
+   
             self.b_history[:, day_idx+1] = self.b
             return
 
         if (cur_day % self.rebal_interval) != 0:
-            # Don't make any trades today (avoid transaction costs)
-            # TODO: need to use special flags to indicate hold when using Yanjun's framework.
+          
             return
 
         self.b = self.get_new_allocation(cur_day, init)
@@ -148,8 +127,6 @@ class Portfolio(object):
         value_vec[isActive] = value_vec[isActive] + revenue_vec
         self.dollars_cl_history[day_idx] = self.dollars_op_history[day_idx] + np.sum(revenue_vec)
 
-        # At the end of Day t, we use the close price of day t to adjust our
-        # portfolio to the desired percentage.
         if day_idx <= self.num_days-2:
             nonActive = np.logical_not(isActive)
             value_realizable = self.dollars_cl_history[day_idx] - np.sum(value_vec[nonActive])
